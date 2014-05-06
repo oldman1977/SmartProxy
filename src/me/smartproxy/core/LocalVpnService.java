@@ -135,7 +135,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 	}
 	
 	String getAppInstallID(){
-		 SharedPreferences preferences = getSharedPreferences("XiegongjiVPN", MODE_PRIVATE); 
+		 SharedPreferences preferences = getSharedPreferences("SmartProxy", MODE_PRIVATE); 
 		 String appInstallID=preferences.getString("AppInstallID", null);
 		 if(appInstallID==null||appInstallID.isEmpty()){
 			 appInstallID=UUID.randomUUID().toString();
