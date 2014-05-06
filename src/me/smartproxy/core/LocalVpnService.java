@@ -35,7 +35,7 @@ import android.os.ParcelFileDescriptor;
 public class LocalVpnService extends VpnService implements Runnable {
 
     public static LocalVpnService Instance;
-    public static String ConfigUrl="https://xiegongji.net/apac.txt";
+    public static String ConfigUrl;
 	public static boolean IsRunning = false;
 
 	private static int ID;
