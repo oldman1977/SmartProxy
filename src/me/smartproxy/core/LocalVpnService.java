@@ -17,9 +17,7 @@ import me.smartproxy.tcpip.IPHeader;
 import me.smartproxy.tcpip.TCPHeader;
 import me.smartproxy.tcpip.UDPHeader;
 import me.smartproxy.ui.MainActivity;
-
 import me.smartproxy.R;
-
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -334,23 +332,29 @@ public class LocalVpnService extends VpnService implements Runnable {
 		IPAddress ipAddress=ProxyConfig.Instance.getDefaultLocalIP();
 		LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);	
 		builder.addAddress(ipAddress.Address, ipAddress.PrefixLength);
-		System.out.printf("addAddress: %s/%d\n", ipAddress.Address,ipAddress.PrefixLength);
+		if(ProxyConfig.IS_DEBUG)
+			System.out.printf("addAddress: %s/%d\n", ipAddress.Address,ipAddress.PrefixLength);
 		
 		for (ProxyConfig.IPAddress dns : ProxyConfig.Instance.getDnsList()) {
 			builder.addDnsServer(dns.Address);
-			System.out.printf("addDnsServer: %s\n", dns.Address);
+			if(ProxyConfig.IS_DEBUG)
+				System.out.printf("addDnsServer: %s\n", dns.Address);
 		}
 		
 		if(ProxyConfig.Instance.getRouteList().size()>0){
 			for (ProxyConfig.IPAddress routeAddress : ProxyConfig.Instance.getRouteList()) {
 				builder.addRoute(routeAddress.Address,routeAddress.PrefixLength);
-				System.out.printf("addRoute: %s/%d\n", routeAddress.Address,routeAddress.PrefixLength);
+				if(ProxyConfig.IS_DEBUG)
+					System.out.printf("addRoute: %s/%d\n", routeAddress.Address,routeAddress.PrefixLength);
 			}
 			builder.addRoute(CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP), 16);
-			System.out.printf("addRoute for FAKE_NETWORK: %s/%d\n", CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP),16);
+			
+			if(ProxyConfig.IS_DEBUG)
+				System.out.printf("addRoute for FAKE_NETWORK: %s/%d\n", CommonMethods.ipIntToString(ProxyConfig.FAKE_NETWORK_IP),16);
 		}else {
 			builder.addRoute("0.0.0.0",0);
-			System.out.printf("addDefaultRoute: 0.0.0.0/0\n");
+			if(ProxyConfig.IS_DEBUG)
+				System.out.printf("addDefaultRoute: 0.0.0.0/0\n");
 		}
 		
  
@@ -362,7 +366,8 @@ public class LocalVpnService extends VpnService implements Runnable {
 			if (value != null && !"".equals(value) && !servers.contains(value)) {
 				servers.add(value);
 				builder.addRoute(value, 32);
-				System.out.printf("%s=%s\n", name, value);
+				if(ProxyConfig.IS_DEBUG)
+					System.out.printf("%s=%s\n", name, value);
 			}
 		}
  

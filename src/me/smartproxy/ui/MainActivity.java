@@ -1,5 +1,6 @@
 package me.smartproxy.ui;
 
+import java.io.File;
 import java.util.Calendar;
 import me.smartproxy.core.LocalVpnService;
 import me.smartproxy.R;
@@ -90,11 +91,24 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 		try {
 			 if(url==null||url.isEmpty())
 				 return false;
-			 Uri uri=Uri.parse(url);
-			 if(!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
-				 return false;
-			 if(uri.getHost()==null)
-				 return false;
+			 
+			 if(url.startsWith("/")){//file path
+				 File file=new File(url);
+				 if(!file.exists()){
+					 onLogReceived(String.format("File(%s) not exists.",url));
+					 return false;
+				 }
+				 if(!file.canRead()){
+					 onLogReceived(String.format("File(%s) can't read.",url));
+					 return false;
+				 }
+			 }else { //url
+				 Uri uri=Uri.parse(url);
+				 if(!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme()))
+					 return false;
+				 if(uri.getHost()==null)
+					 return false;
+			 }
 			 return true;
 		} catch (Exception e) {
 			return false;
@@ -112,7 +126,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			builder.setTitle(getString(R.string.config_url));
 			final EditText editText=new EditText(this);
 			editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-			editText.setHint("http://smartproxy.me/demo.cfg");
+			editText.setHint(getString(R.string.config_url_hint));
 			editText.setText(value);
 			builder.setView(editText);
 			builder.setPositiveButton(getString(R.string.btn_ok),new OnClickListener() {

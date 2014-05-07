@@ -3,6 +3,7 @@ package me.smartproxy.core;
 import android.annotation.SuppressLint;
 import android.os.Build;
 
+import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import org.apache.http.util.EntityUtils;
 
 public class ProxyConfig {
 	public static final ProxyConfig Instance=new ProxyConfig();
-	public final static boolean IS_DEBUG=true;
+	public final static boolean IS_DEBUG=false;
 	public static String AppInstallID;
 	public static String AppVersion;
 	public final static int FAKE_NETWORK_MASK=CommonMethods.ipStringToInt("255.255.0.0");
@@ -231,8 +232,37 @@ public class ProxyConfig {
     	}
     }
     
+    private String[] readConfigFromFile(String path) throws Exception {
+    	StringBuilder sBuilder=new StringBuilder();
+        FileInputStream inputStream=null;
+    	try {
+    		byte[] buffer=new byte[8192];
+    		int count=0;
+    		inputStream=new FileInputStream(path);
+    		while ((count=inputStream.read(buffer))>0) {
+				 sBuilder.append(new String(buffer,0,count,"UTF-8"));
+			}
+    		return sBuilder.toString().split("\\n");
+		} catch (Exception e) {
+			throw new Exception(String.format("Can't read config file: %s", path));
+		}finally{
+			if(inputStream!=null){
+				try {
+					inputStream.close();
+				} catch (Exception e2) {
+				}
+			}
+		}
+    }
+    
     public void loadFromUrl(String url) throws Exception{
-    	String[] lines=downloadConfig(url);
+    	String[] lines=null;
+    	if(url.charAt(0)=='/'){
+    		lines=readConfigFromFile(url);
+    	}else {
+    		lines=downloadConfig(url);
+		}
+    
         m_IpList.clear();
         m_DnsList.clear();
         m_RouteList.clear();
@@ -250,7 +280,9 @@ public class ProxyConfig {
 			String tagString=items[0].toLowerCase(Locale.ENGLISH).trim();
 			try {
 				if(!tagString.startsWith("#")){
-					 System.out.println(line);
+					if(ProxyConfig.IS_DEBUG)
+						System.out.println(line);
+					
 					 if(tagString.equals("ip")){
 						 addIPAddressToList(items, 1, m_IpList);
 					 }else if(tagString.equals("dns")){

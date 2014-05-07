@@ -14,4 +14,5 @@
     <string name="about_info">SmartProxy is a smart TCP transparent proxy software just like its name. It is determined according to the rules of the configuration file using a proxy or directly connected. The biggest advantage is prevent DNS cache pollution, never lost connection, also very save electricity.</string>
     <string name="exit_confirm_info">This will disconnect the VPN connection, Are you sure to exit?</string>
     <string name="err_invalid_url">The config URL is invalid.</string>
+    <string name="config_url_hint">URL or local file path</string>
 </resources>
