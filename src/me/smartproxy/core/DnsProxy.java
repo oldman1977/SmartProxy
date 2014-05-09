@@ -200,6 +200,7 @@ public class DnsProxy implements Runnable {
 	
 	private boolean interceptDns(IPHeader ipHeader,UDPHeader udpHeader,DnsPacket dnsPacket){
 		Question question=dnsPacket.Questions[0];
+		System.out.println("DNS Qeury "+question.Domain);
 		if(question.Type==1){
 			if(ProxyConfig.Instance.needProxy(question.Domain, getIPFromCache(question.Domain))){
 				int fakeIP=getOrCreateFakeIP(question.Domain);

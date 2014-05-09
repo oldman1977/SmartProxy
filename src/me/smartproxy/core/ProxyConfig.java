@@ -15,6 +15,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.smartproxy.tcpip.CommonMethods;
+import me.smartproxy.tunnel.Config;
+import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
+import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -25,7 +28,7 @@ import org.apache.http.util.EntityUtils;
 
 public class ProxyConfig {
 	public static final ProxyConfig Instance=new ProxyConfig();
-	public final static boolean IS_DEBUG=false;
+	public final static boolean IS_DEBUG=true;
 	public static String AppInstallID;
 	public static String AppVersion;
 	public final static int FAKE_NETWORK_MASK=CommonMethods.ipStringToInt("255.255.0.0");
@@ -34,7 +37,7 @@ public class ProxyConfig {
     ArrayList<IPAddress> m_IpList;
     ArrayList<IPAddress> m_DnsList;
     ArrayList<IPAddress> m_RouteList;
-    ArrayList<InetSocketAddress> m_ProxyList;
+    ArrayList<Config> m_ProxyList;
     HashMap<String, Boolean> m_DomainMap;
     
     int m_dns_ttl;
@@ -43,6 +46,7 @@ public class ProxyConfig {
     String m_user_agent;
     boolean m_outside_china_use_proxy=true;
     boolean m_isolate_http_host_header=true;
+    int m_mtu;
     
     Timer m_Timer;
  
@@ -85,7 +89,7 @@ public class ProxyConfig {
     	m_IpList=new ArrayList<IPAddress>();
     	m_DnsList=new ArrayList<IPAddress>();
     	m_RouteList=new ArrayList<IPAddress>();
-    	m_ProxyList=new ArrayList<InetSocketAddress>();
+    	m_ProxyList=new ArrayList<Config>();
     	m_DomainMap=new HashMap<String, Boolean>();
 
     	m_Timer=new Timer();
@@ -103,10 +107,10 @@ public class ProxyConfig {
 			try {
 				for (int i = 0; i <m_ProxyList.size(); i++) {
 					try {
-						InetSocketAddress proxyAddress=m_ProxyList.get(0);
-						InetAddress address=InetAddress.getByName(proxyAddress.getHostName());
-						 if(address!=null&&!address.equals(proxyAddress.getAddress())){
-							  m_ProxyList.set(i, new InetSocketAddress(address, proxyAddress.getPort()));
+						Config config=m_ProxyList.get(0);
+						InetAddress address=InetAddress.getByName(config.ServerAddress.getHostName());
+						 if(address!=null&&!address.equals(config.ServerAddress.getAddress())){
+							  config.ServerAddress=new InetSocketAddress(address, config.ServerAddress.getPort());
 						 }
 					} catch (Exception e) {
 					}
@@ -122,12 +126,16 @@ public class ProxyConfig {
     	return (ip&ProxyConfig.FAKE_NETWORK_MASK)==ProxyConfig.FAKE_NETWORK_IP;
     }
     
-    public InetSocketAddress getDefaultProxy(){
+    public Config getDefaultProxy(){
     	if(m_ProxyList.size()>0){
     		return m_ProxyList.get(0);
     	}else {
 			return null;
 		}
+    }
+    
+    public Config getDefaultTunnelConfig(InetSocketAddress destAddress){
+    	return getDefaultProxy();
     }
  
     public IPAddress getDefaultLocalIP(){
@@ -159,7 +167,7 @@ public class ProxyConfig {
     
     public String getSessionName(){
     	if(m_session_name==null){
-    		m_session_name=getDefaultProxy().getHostName();
+    		m_session_name=getDefaultProxy().ServerAddress.getHostName();
     	}
     	return m_session_name;
     }
@@ -169,6 +177,14 @@ public class ProxyConfig {
     		m_user_agent = System.getProperty("http.agent");
     	}
     	return m_user_agent;
+    }
+    
+    public int getMTU(){
+    	if(m_mtu>1400&&m_mtu<=20000){
+    		return m_mtu;
+    	}else {
+			return 20000;
+		}
     }
     
 	private Boolean getDomainState(String domain){
@@ -307,10 +323,12 @@ public class ProxyConfig {
 						 m_outside_china_use_proxy=convertToBool(items[1]);
 					 }else if(tagString.equals("isolate_http_host_header")){
 						 m_isolate_http_host_header=convertToBool(items[1]);
+					 }else if(tagString.equals("mtu")) {
+						 m_mtu=Integer.parseInt(items[1]);
 					 }
 				}
 			} catch (Exception e) {
-				throw new Exception(String.format("SmartProxy config file parse error: line:%d, tag:%s", lineNumber,tagString));
+				throw new Exception(String.format("SmartProxy config file parse error: line:%d, tag:%s, error:%s", lineNumber,tagString,e));
 			}
 			
 		}
@@ -326,23 +344,29 @@ public class ProxyConfig {
     		 Pattern p=Pattern.compile("proxy\\s+([^:]+):(\\d+)",Pattern.CASE_INSENSITIVE);
         	 Matcher m=p.matcher(line);
         	 while(m.find()){
-        		 InetSocketAddress proxyAddress= new InetSocketAddress(m.group(1), Integer.parseInt(m.group(2)));
-				 if(!m_ProxyList.contains(proxyAddress)){
-					 m_ProxyList.add(proxyAddress);
-				 }
+        		 HttpConnectConfig config=new HttpConnectConfig();
+        		 config.ServerAddress= new InetSocketAddress(m.group(1), Integer.parseInt(m.group(2)));
+        		 if(!m_ProxyList.contains(config)){
+    				 m_ProxyList.add(config);
+    			 }
         	 }
 		}
     }
     
-    private void addProxyToList(String[] items,int offset){
+    private void addProxyToList(String[] items,int offset) throws Exception{
     	for (int i = offset; i < items.length; i++) {
 			 String proxyString=items[i].trim();
-			 String[] arrStrings=proxyString.split(":");
-			 if(arrStrings.length==2){
-				 InetSocketAddress proxyAddress= new InetSocketAddress(arrStrings[0], Integer.parseInt(arrStrings[1]));
-				 if(!m_ProxyList.contains(proxyAddress)){
-					 m_ProxyList.add(proxyAddress);
+			 Config config=null;
+			 if(proxyString.startsWith("ss://")){
+				 config=ShadowsocksConfig.parse(proxyString);
+			 }else {
+				 if(!proxyString.toLowerCase().startsWith("http://")){
+					 proxyString="http://"+proxyString;
 				 }
+				 config=HttpConnectConfig.parse(proxyString);
+			 }
+			 if(!m_ProxyList.contains(config)){
+				 m_ProxyList.add(config);
 			 }
 		}
     }

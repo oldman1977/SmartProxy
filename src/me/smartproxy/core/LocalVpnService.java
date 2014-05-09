@@ -58,7 +58,7 @@ public class LocalVpnService extends VpnService implements Runnable {
 	public LocalVpnService() {
 		ID++;
 		m_Handler=new Handler();
-		m_Packet = new byte[2000];
+		m_Packet = new byte[20000];
 		m_IPHeader = new IPHeader(m_Packet, 0);
 		m_TCPHeader=new TCPHeader(m_Packet, 20);
 		m_UDPHeader=new UDPHeader(m_Packet, 20);
@@ -327,7 +327,9 @@ public class LocalVpnService extends VpnService implements Runnable {
 
 	private ParcelFileDescriptor establishVPN() throws Exception {
 		Builder builder = new Builder();
-		builder.setMtu(1500);
+		builder.setMtu(ProxyConfig.Instance.getMTU());
+		if(ProxyConfig.IS_DEBUG)
+			System.out.printf("setMtu: %d\n", ProxyConfig.Instance.getMTU());
 		
 		IPAddress ipAddress=ProxyConfig.Instance.getDefaultLocalIP();
 		LOCAL_IP = CommonMethods.ipStringToInt(ipAddress.Address);	

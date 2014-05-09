@@ -9,7 +9,11 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import me.smartproxy.tcpip.CommonMethods;
-
+import me.smartproxy.tunnel.Config;
+import me.smartproxy.tunnel.RawTunnel;
+import me.smartproxy.tunnel.Tunnel;
+import me.smartproxy.tunnel.httpconnect.HttpConnectConfig;
+import me.smartproxy.tunnel.shadowsocks.ShadowsocksConfig;
 
 public class TcpProxyServer implements Runnable {
 
@@ -68,13 +72,13 @@ public class TcpProxyServer implements Runnable {
 					if (key.isValid()) {
 						try {
 							    if (key.isReadable()) {
-							    	((SocketChannelWrapper)key.attachment()).onRead(key);
+							    	((Tunnel)key.attachment()).onReadable(key);
 								}
 							    else if(key.isWritable()){
-							    	((SocketChannelWrapper)key.attachment()).onWrite(key);
+							    	((Tunnel)key.attachment()).onWritable(key);
 							    }
 							    else if (key.isConnectable()) {
-							    	((SocketChannelWrapper)key.attachment()).onConnected();
+							    	((Tunnel)key.attachment()).onConnectable();
 								}
 							    else  if (key.isAcceptable()) {
 									onAccepted(key);
@@ -94,51 +98,43 @@ public class TcpProxyServer implements Runnable {
 		}
 	}
 
-	InetSocketAddress getTargetSocketAddress(SocketChannel localChannel){
+	InetSocketAddress getDestAddress(SocketChannel localChannel){
 		short portKey=(short)localChannel.socket().getPort();
 		NatSession session =NatSessionManager.getSession(portKey);
 		if (session != null) {
 			if(ProxyConfig.Instance.needProxy(session.RemoteHost, session.RemoteIP)){
 				if(ProxyConfig.IS_DEBUG)
-					System.out.printf("%d/%d:[PROXY] %s=>%s:%d\n",NatSessionManager.getSessionCount(), SocketChannelWrapper.SessionCount,session.RemoteHost,CommonMethods.ipIntToString(session.RemoteIP),session.RemotePort&0xFFFF);
+					System.out.printf("%d/%d:[PROXY] %s=>%s:%d\n",NatSessionManager.getSessionCount(), Tunnel.SessionCount,session.RemoteHost,CommonMethods.ipIntToString(session.RemoteIP),session.RemotePort&0xFFFF);
 				return InetSocketAddress.createUnresolved(session.RemoteHost, session.RemotePort&0xFFFF);
 			}else {
-				if(ProxyConfig.IS_DEBUG)
-					System.out.printf("%d/%d:[DIRECT] %s=>%s:%d\n",NatSessionManager.getSessionCount(),SocketChannelWrapper.SessionCount, session.RemoteHost,CommonMethods.ipIntToString(session.RemoteIP),session.RemotePort&0xFFFF);
-				return new InetSocketAddress(localChannel.socket().getInetAddress(),session.RemotePort&0xFFFF);
+			    return new InetSocketAddress(localChannel.socket().getInetAddress(),session.RemotePort&0xFFFF);
 			}
 		}
 		return null;
 	}
 	
 	void onAccepted(SelectionKey key){
-		SocketChannelWrapper localBrotherChannelWrapper =null;
+		Tunnel localTunnel =null;
 		try {
 			SocketChannel localChannel=m_ServerSocketChannel.accept();
-			localBrotherChannelWrapper=new SocketChannelWrapper(localChannel, m_Selector);
-			
-			InetSocketAddress targetAddress= getTargetSocketAddress(localChannel);
-			if(targetAddress!=null){
-				SocketChannelWrapper  remoteBrotherChannelWrapper=SocketChannelWrapper.createNew(m_Selector);
-				remoteBrotherChannelWrapper.setBrotherChannelWrapper(localBrotherChannelWrapper);//关联兄弟
-				localBrotherChannelWrapper.setBrotherChannelWrapper(remoteBrotherChannelWrapper);//关联兄弟
-				
-				InetSocketAddress proxySocketAddress=null;
-				if(targetAddress.isUnresolved()){
-					proxySocketAddress=ProxyConfig.Instance.getDefaultProxy();
-				}
-				
-				remoteBrotherChannelWrapper.connect(targetAddress, proxySocketAddress);//开始连接
+			localTunnel=TunnelFactory.wrap(localChannel, m_Selector);
+
+			InetSocketAddress destAddress=getDestAddress(localChannel);
+			if(destAddress!=null){
+				Tunnel remoteTunnel=TunnelFactory.createTunnelByConfig(destAddress,m_Selector);
+				remoteTunnel.setBrotherTunnel(localTunnel);//关联兄弟
+				localTunnel.setBrotherTunnel(remoteTunnel);//关联兄弟
+				remoteTunnel.connect(destAddress);//开始连接
 			}
 			else {
 				LocalVpnService.Instance.writeLog("Error: socket(%s:%d) target host is null.",localChannel.socket().getInetAddress().toString(),localChannel.socket().getPort());
-				localBrotherChannelWrapper.dispose();
+				localTunnel.dispose();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			LocalVpnService.Instance.writeLog("Error: remote socket create failed: %s",e.toString());
-			if(localBrotherChannelWrapper!=null){
-				localBrotherChannelWrapper.dispose();
+			if(localTunnel!=null){
+				localTunnel.dispose();
 			}
 		}
 	}
