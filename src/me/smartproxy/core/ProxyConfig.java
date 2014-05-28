@@ -348,6 +348,7 @@ public class ProxyConfig {
         		 config.ServerAddress= new InetSocketAddress(m.group(1), Integer.parseInt(m.group(2)));
         		 if(!m_ProxyList.contains(config)){
     				 m_ProxyList.add(config);
+    				 m_DomainMap.put(config.ServerAddress.getHostName(), false);
     			 }
         	 }
 		}
@@ -367,6 +368,7 @@ public class ProxyConfig {
 			 }
 			 if(!m_ProxyList.contains(config)){
 				 m_ProxyList.add(config);
+				 m_DomainMap.put(config.ServerAddress.getHostName(), false);
 			 }
 		}
     }
