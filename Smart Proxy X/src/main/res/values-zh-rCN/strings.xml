@@ -6,6 +6,9 @@
     <string name="menu_item_exit">退出</string>
     <string name="config_url">配置地址</string>
     <string name="config_not_set_value">未设置</string>
+    <string name="config_url_scan">扫描二维码</string>
+    <string name="config_url_manual">手动输入</string>
+    <string name="config_url_scan_hint">扫描配置地址的二维码</string>
     <string name="btn_ok">确定</string>
     <string name="btn_cancel">取消</string>
     <string name="btn_more">更多&#8230;</string>
