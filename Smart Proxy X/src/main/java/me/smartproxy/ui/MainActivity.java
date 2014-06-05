@@ -19,7 +19,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
 
@@ -130,6 +131,35 @@ public class MainActivity extends Activity implements
             return;
         }
 
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.config_url)
+                .setItems(new CharSequence[]{
+                        getString(R.string.config_url_scan),
+                        getString(R.string.config_url_manual)
+                }, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch (i) {
+                            case 0:
+                                scanForConfigUrl();
+                                break;
+                            case 1:
+                                showConfigUrlInputDialog();
+                                break;
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private void scanForConfigUrl() {
+        new IntentIntegrator(this)
+                .setResultDisplayDuration(0)
+                .setPrompt(getString(R.string.config_url_scan_hint))
+                .initiateScan(IntentIntegrator.QR_CODE_TYPES);
+    }
+
+    private void showConfigUrlInputDialog() {
         final EditText editText = new EditText(this);
         editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         editText.setHint(getString(R.string.config_url_hint));
@@ -225,23 +255,31 @@ public class MainActivity extends Activity implements
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i(TAG, "onActivityResult:" + resultCode);
-
-        switch (requestCode) {
-            case START_VPN_SERVICE_REQUEST_CODE:
-                if (resultCode == RESULT_OK) {
-                    startVPNService();
-                } else {
-                    switchProxy.setChecked(false);
-                    switchProxy.setEnabled(true);
-                    onLogReceived("canceled.");
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == START_VPN_SERVICE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                startVPNService();
+            } else {
+                switchProxy.setChecked(false);
+                switchProxy.setEnabled(true);
+                onLogReceived("canceled.");
+            }
+            return;
         }
+
+        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanResult != null) {
+            String configUrl = scanResult.getContents();
+            if (isValidUrl(configUrl)) {
+                setConfigUrl(configUrl);
+                textViewConfigUrl.setText(configUrl);
+            } else {
+                Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        super.onActivityResult(requestCode, resultCode, intent);
     }
 
     @Override
