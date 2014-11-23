@@ -252,22 +252,23 @@ public class MainActivity extends ActionBarActivity implements
                 switchProxy.setEnabled(true);
                 onLogReceived("canceled.");
             }
-            return;
-        }
-
-        IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
-        if (scanResult != null) {
-            String configUrl = scanResult.getContents();
-            if (isValidUrl(configUrl)) {
-                setConfigUrl(configUrl);
-                textViewConfigUrl.setText(configUrl);
-            } else {
-                Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
+        }else if (requestCode == IntentIntegrator.REQUEST_CODE) {
+            IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+            if (scanResult != null) {
+                String configUrl = scanResult.getContents();
+                if (isValidUrl(configUrl)) {
+                    setConfigUrl(configUrl);
+                    textViewConfigUrl.setText(configUrl);
+                } else {
+                    Toast.makeText(MainActivity.this, R.string.err_invalid_url, Toast.LENGTH_SHORT).show();
+                }
             }
-            return;
+        }else{
+            super.onActivityResult(requestCode, resultCode, intent);
         }
 
-        super.onActivityResult(requestCode, resultCode, intent);
+
+
     }
 
     @Override
