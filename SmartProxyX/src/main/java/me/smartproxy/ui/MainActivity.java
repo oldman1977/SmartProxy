@@ -80,7 +80,7 @@ public class MainActivity extends ActionBarActivity implements
         SharedPreferences preferences = getSharedPreferences("SmartProxy", MODE_PRIVATE);
         Editor editor = preferences.edit();
         editor.putString(CONFIG_URL_KEY, configUrl);
-        editor.commit();
+        editor.apply();
     }
 
     String getVersionName() {
