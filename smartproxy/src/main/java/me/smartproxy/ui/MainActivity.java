@@ -7,11 +7,9 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +28,7 @@ import com.google.zxing.integration.android.IntentResult;
 import java.io.File;
 import java.util.Calendar;
 
+import me.smartproxy.BuildConfig;
 import me.smartproxy.R;
 import me.smartproxy.core.LocalVpnService;
 
@@ -94,21 +93,6 @@ public class MainActivity extends ActionBarActivity implements
         Editor editor = preferences.edit();
         editor.putString(CONFIG_URL_KEY, configUrl);
         editor.apply();
-    }
-
-    String getVersionName() {
-        PackageManager packageManager = getPackageManager();
-        if (packageManager == null) {
-            Log.e(TAG, "null package manager is impossible");
-            return null;
-        }
-
-        try {
-            return packageManager.getPackageInfo(getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "package not found is impossible", e);
-            return null;
-        }
     }
 
     boolean isValidUrl(String url) {
@@ -254,7 +238,7 @@ public class MainActivity extends ActionBarActivity implements
         switch (item.getItemId()) {
             case R.id.menu_item_about:
                 new AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.app_name) + getVersionName())
+                        .setTitle(getString(R.string.app_name) + BuildConfig.VERSION_NAME)
                         .setMessage(R.string.about_info)
                         .setPositiveButton(R.string.btn_ok, null)
                         .setNegativeButton(R.string.btn_more, new OnClickListener() {
