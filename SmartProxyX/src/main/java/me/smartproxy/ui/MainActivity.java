@@ -1,7 +1,7 @@
 package me.smartproxy.ui;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.support.v7.app.ActionBarActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -11,6 +11,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -27,7 +28,7 @@ import me.smartproxy.core.LocalVpnService;
 import java.io.File;
 import java.util.Calendar;
 
-public class MainActivity extends Activity implements
+public class MainActivity extends ActionBarActivity implements
         View.OnClickListener,
         OnCheckedChangeListener,
         LocalVpnService.onStatusChangedListener {
@@ -40,7 +41,7 @@ public class MainActivity extends Activity implements
 
     private static final int START_VPN_SERVICE_REQUEST_CODE = 1985;
 
-    private Switch switchProxy;
+    private SwitchCompat switchProxy;
     private TextView textViewLog;
     private ScrollView scrollViewLog;
     private TextView textViewConfigUrl;
@@ -291,7 +292,7 @@ public class MainActivity extends Activity implements
             return false;
         }
 
-        switchProxy = (Switch) menuItem.getActionView();
+        switchProxy = (SwitchCompat) menuItem.getActionView();
         if (switchProxy == null) {
             return false;
         }
