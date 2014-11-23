@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_item_switch"
+        app:actionViewClass="android.support.v7.widget.SwitchCompat"
+        app:showAsAction="always"
+        android:title="@string/menu_item_switch"/>
+    <item
+        android:id="@+id/menu_item_about"
+        android:title="@string/menu_item_about"/>
+    <item
+        android:id="@+id/menu_item_exit"
+        android:title="@string/menu_item_exit"/>
+</menu>
