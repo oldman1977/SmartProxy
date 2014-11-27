@@ -24,7 +24,7 @@ public class ShadowsocksTunnel extends Tunnel {
 	@Override
 	protected void onConnected(ByteBuffer buffer) throws Exception {
 		
-		//构造socks5请求（跳过前3个字节）
+		//鏋勯�爏ocks5璇锋眰锛堣烦杩囧墠3涓瓧鑺傦級
 		buffer.clear();
 		buffer.put((byte)0x03);//domain
 		byte[] domainBytes=m_DestAddress.getHostName().getBytes();
