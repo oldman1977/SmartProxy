@@ -6,12 +6,12 @@
     <string name="menu_item_exit">Exit</string>
     <string name="config_url">Config URL</string>
     <string name="config_not_set_value">Not set</string>
-    <string name="config_url_scan">Scan an QR code</string>
+    <string name="config_url_scan">Scan a QR code</string>
     <string name="config_url_manual">Type manually</string>
     <string name="config_url_scan_hint">Scan the QR code of your config url</string>
     <string name="btn_ok">OK</string>
     <string name="btn_cancel">Cancel</string>
-    <string name="btn_more">More&#8230;</string>
+    <string name="btn_more">More…</string>
     <string name="vpn_connected_status">connected</string>
     <string name="vpn_disconnected_status">disconnected</string>
     <string name="about_info">SmartProxy is a smart TCP transparent proxy software just like its name. It is determined according to the rules of the configuration file using a proxy or directly connected. The biggest advantage is prevent DNS cache pollution, never lost connection, also very save electricity.</string>
