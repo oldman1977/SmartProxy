@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SmartProxy</string>
-    <string name="menu_item_switch">代理</string>
+    <string name="proxy">代理</string>
     <string name="menu_item_about">关于</string>
     <string name="menu_item_exit">退出</string>
     <string name="config_url">配置地址</string>

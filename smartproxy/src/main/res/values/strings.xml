@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SmartProxy</string>
-    <string name="menu_item_switch">Proxy</string>
+    <string name="proxy">Proxy</string>
     <string name="menu_item_about">About</string>
     <string name="menu_item_exit">Exit</string>
     <string name="config_url">Config URL</string>
