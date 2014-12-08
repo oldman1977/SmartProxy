@@ -1,0 +1,3 @@
+-keepnames me.smartproxy.** {
+    *;
+}

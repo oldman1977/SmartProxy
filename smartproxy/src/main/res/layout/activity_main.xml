@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.rengwuxian.materialedittext.MaterialEditText
+        android:id="@+id/config_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:hint="@string/config_url"
+        android:inputType="textUri"
+        android:paddingRight="36dp"
+        app:floatingLabel="highlight"
+        app:primaryColor="?attr/colorAccent"
+        app:singleLineEllipsis="true" />
+
+    <ImageButton
+        android:id="@+id/scan"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignBottom="@+id/config_url"
+        android:layout_alignEnd="@+id/config_url"
+        android:layout_alignRight="@+id/config_url"
+        android:layout_marginBottom="22dp"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/config_url_scan"
+        android:src="@drawable/ic_camera_alt_grey600_24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/online"
+        android:layout_margin="8dp"
+        android:layout_toLeftOf="@+id/online"
+        android:layout_toStartOf="@+id/online"
+        android:text="@string/proxy" />
+
+    <Switch
+        android:id="@+id/online"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/config_url"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp" />
+
+    <ScrollView
+        android:id="@+id/scrollViewLog"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/online">
+
+        <TextView
+            android:id="@+id/textViewLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    </ScrollView>
+
+</RelativeLayout>
